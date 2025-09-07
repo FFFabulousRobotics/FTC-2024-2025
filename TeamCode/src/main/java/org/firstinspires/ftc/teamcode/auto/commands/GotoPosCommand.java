@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.auto.commands;
 import com.qualcomm.hardware.sparkfun.SparkFunOTOS;
 
 import org.firstinspires.ftc.teamcode.auto.Command;
+import org.firstinspires.ftc.teamcode.hardware.PIDController;
 import org.firstinspires.ftc.teamcode.hardware.RobotAuto;
 
 public class GotoPosCommand implements Command {
@@ -12,8 +13,9 @@ public class GotoPosCommand implements Command {
     double currentX,currentY,dx,dy,angle,unitX,unitY,deltaDistance;
     double kp;
     double pGain = 0.06;
-    double threshold = 0.5;
+    double threshold = 10;//这里本来是0.5
     SparkFunOTOS.Pose2D pose;
+    PIDController pidControllerForDistance = new PIDController();
 
     public GotoPosCommand(RobotAuto robotAuto, double desiredX, double desiredY){
         this.robotAuto = robotAuto;
@@ -34,7 +36,6 @@ public class GotoPosCommand implements Command {
     @Override
     public void iterate() {
         // get the position error
-        robotAuto.update();
         pose = robotAuto.getPosition();
         currentX = pose.x; currentY = pose.y;
         dx = desiredX-currentX;
@@ -44,12 +45,12 @@ public class GotoPosCommand implements Command {
         angle = Math.atan2(dy,dx);
         unitY = Math.sin(angle);
         unitX = Math.cos(angle);
-
-        // P control
         deltaDistance = robotAuto.calcDistance(dx,dy);
-        kp = deltaDistance * pGain;
-        if(kp > 1) kp = 1;
-        robotAuto.absoluteDriveRobot(-unitY * kp,unitX * kp,0);
+
+        // p control
+        double rate = pidControllerForDistance.updatePID(deltaDistance);
+        if(rate >= 1) rate = 1;
+        robotAuto.absoluteDriveRobot(-unitY * rate,unitX * rate,0);
     }
 
     @Override
@@ -63,6 +64,9 @@ public class GotoPosCommand implements Command {
         currentX = pose.x; currentY = pose.y;
         dx = desiredX-currentX;
         dy = desiredY-currentY;
+
+        pidControllerForDistance.setPIDArguments(this.pGain,0,0);
+        pidControllerForDistance.reset();
     }
 
     @Override

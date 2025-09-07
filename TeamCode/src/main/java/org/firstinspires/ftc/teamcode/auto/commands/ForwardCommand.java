@@ -6,14 +6,16 @@ import org.firstinspires.ftc.teamcode.auto.Command;
 import org.firstinspires.ftc.teamcode.hardware.RobotAuto;
 import org.firstinspires.ftc.teamcode.hardware.RobotChassis;
 
-import javax.crypto.spec.RC2ParameterSpec;
-
 public class ForwardCommand implements Command {
     RobotAuto robotAuto;
     RobotChassis robotChassis;
     double distance;
-    double maxDriveSpeed = 0.6;
+    double maxDriveSpeed = 1;
+
     double heading;
+    double startTime;
+    boolean isTimed = false;
+    double time = 0;
 
     static final double COUNTS_PER_MOTOR_REV = 560;
     static final double DRIVE_GEAR_REDUCTION = (double) 3 / 5;
@@ -27,6 +29,14 @@ public class ForwardCommand implements Command {
         this.robotAuto = robotAuto;
         this.robotChassis = robotAuto.robotChassis;
         this.distance = -distance;
+    }
+
+    public ForwardCommand(RobotAuto robotAuto, boolean isTimed, double second){
+        this.robotAuto = robotAuto;
+        this.robotChassis = robotAuto.robotChassis;
+        this.distance = second*10;
+        this.isTimed = isTimed;
+        this.time = second;
     }
 
     public ForwardCommand(RobotAuto robotAuto, double distance, double speed){
@@ -51,7 +61,11 @@ public class ForwardCommand implements Command {
 
     @Override
     public boolean hasNext() {
-        return robotChassis.isAllBusy();
+        if(isTimed){
+            return (this.robotAuto.opMode.getRuntime() < startTime + time);
+        }else{
+            return robotChassis.isAllBusy();
+        }
     }
 
     @Override
@@ -65,6 +79,7 @@ public class ForwardCommand implements Command {
 
         maxDriveSpeed = Math.abs(maxDriveSpeed);
         robotChassis.driveRobot(maxDriveSpeed, 0, 0);
+        this.startTime = this.robotAuto.opMode.getRuntime();
     }
 
     @Override

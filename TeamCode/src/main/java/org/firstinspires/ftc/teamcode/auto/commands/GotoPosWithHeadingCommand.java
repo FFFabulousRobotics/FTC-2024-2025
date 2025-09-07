@@ -13,10 +13,10 @@ public class GotoPosWithHeadingCommand implements Command {
     double currentX,currentY,dx,dy,angle,unitX,unitY,deltaDistance;
     double headingError;
     double kp;
-    double threshold = 1;
+    double threshold = 3;//这里原本是1
     double headingThreshold = 0.5;
     double proportionalGain = 0.06;
-    double P_TURN_GAIN = 0.05;
+    double P_TURN_GAIN = 0.01;
     SparkFunOTOS.Pose2D pose;
     PIDController pidControllerForDistance = new PIDController();
     PIDController pidControllerForHeading = new PIDController();
@@ -31,8 +31,25 @@ public class GotoPosWithHeadingCommand implements Command {
         if(isFast){
             this.threshold = 6;
             this.headingThreshold = 5;
-            this.proportionalGain = 1;
+            this.proportionalGain = 2;
         }
+        this.robotAuto = robotAuto;
+        this.desiredX = desiredX;
+        this.desiredY = desiredY;
+        this.heading = heading;
+    }
+
+    public GotoPosWithHeadingCommand(RobotAuto robotAuto, double desiredX, double desiredY, double heading, double threshold){
+        this.threshold = threshold;
+        this.robotAuto = robotAuto;
+        this.desiredX = desiredX;
+        this.desiredY = desiredY;
+        this.heading = heading;
+    }
+
+    public GotoPosWithHeadingCommand(RobotAuto robotAuto, double desiredX, double desiredY, double heading, double pGain, double threshold){
+        this.proportionalGain = pGain;
+        this.threshold = threshold;
         this.robotAuto = robotAuto;
         this.desiredX = desiredX;
         this.desiredY = desiredY;
@@ -41,7 +58,6 @@ public class GotoPosWithHeadingCommand implements Command {
 
     @Override
     public void iterate() {
-        robotAuto.update();
         pose = robotAuto.getPosition();
         currentX = pose.x; currentY = pose.y;
         dx = desiredX-currentX;
@@ -58,8 +74,6 @@ public class GotoPosWithHeadingCommand implements Command {
 
         // Clip the speed to the maximum permitted value.
         turnSpeed = Range.clip(turnSpeed, -0.6, 0.6);
-
-        robotAuto.absoluteDriveRobot(-unitY * rate,unitX * rate, -turnSpeed);
 
         robotAuto.absoluteDriveRobot(-unitY * rate,unitX * rate, -turnSpeed);
     }

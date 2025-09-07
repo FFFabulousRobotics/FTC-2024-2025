@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.hardware;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
 
@@ -35,9 +36,9 @@ public class RobotChassis {
         rightBackDrive = hardwareMap.get(DcMotor.class, "BR");
 
         leftFrontDrive.setDirection(DcMotor.Direction.FORWARD);
-        leftBackDrive.setDirection(DcMotor.Direction.FORWARD);
-        rightFrontDrive.setDirection(DcMotor.Direction.REVERSE);
-        rightBackDrive.setDirection(DcMotor.Direction.FORWARD);
+        leftBackDrive.setDirection(DcMotor.Direction.REVERSE);
+        rightFrontDrive.setDirection(DcMotor.Direction.FORWARD);
+        rightBackDrive.setDirection(DcMotor.Direction.REVERSE);
 
         resetEncoder();
 
@@ -86,29 +87,21 @@ public class RobotChassis {
      * @param lateral Right/Left driving power (-1.0 to 1.0) +ve is forward
      * @param yaw     Right/Left turning power (-1.0 to 1.0) +ve is clockwise
      */
+
     public void driveRobot(double axial, double lateral, double yaw) {
-        lateral = -lateral * 1.1; // Counteract imperfect strafing
-        yaw = -yaw;
+        // eliminate the error produced by the right stick
+        yaw = (double) Math.round(yaw * 10) / 10;
 
-//        final double LEFT_REDUCTION = 0.96;
-
-        // Denominator is the largest motor power (absolute value) or 1
-        // This ensures all the powers maintain the same ratio,
-        // but only if at least one is out of the range [-1, 1]
-
+        if (axial == 0 && lateral == 0 & yaw == 0) {
+            brakeWheels();
+        } else {
+            floatWheels();
+        }
         double denominator = Math.max(Math.abs(axial) + Math.abs(lateral) + Math.abs(yaw), 1);
-//        double frontLeftPower = (axial + lateral + yaw) / denominator * LEFT_REDUCTION;
-//        double backLeftPower = (axial - lateral + yaw) / denominator * LEFT_REDUCTION;
-        double frontLeftPower = (axial + lateral + yaw) / denominator;
-        double backLeftPower = (axial - lateral + yaw) / denominator;
-        double frontRightPower = (axial - lateral - yaw) / denominator;
-        double backRightPower = (axial + lateral - yaw) / denominator;
-//        telemetry.addData("fl",frontLeftPower);
-//        telemetry.addData("bl",backLeftPower);
-//        telemetry.addData("fr",frontRightPower);
-//        telemetry.addData("br",backRightPower);
-//        telemetry.update();
-
+        double frontLeftPower = (-axial + lateral + yaw) / denominator;
+        double backLeftPower = (-axial - lateral + yaw) / denominator;
+        double frontRightPower = (axial + lateral + yaw) / denominator;
+        double backRightPower = (axial - lateral + yaw) / denominator;
         leftFrontDrive.setPower(frontLeftPower);
         leftBackDrive.setPower(backLeftPower);
         rightFrontDrive.setPower(frontRightPower);
@@ -202,4 +195,25 @@ public class RobotChassis {
         return new int[]{lf, lb, lb, rb};
     }
 
+    public double[] getPower(){
+        double lf = leftFrontDrive.getPower();
+        double rf = rightFrontDrive.getPower();
+        double lb = leftBackDrive.getPower();
+        double rb = rightBackDrive.getPower();
+        return new double[]{lf, lb, lb, rb};
+    }
+
+    public void brakeWheels() {
+        leftFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        leftBackDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        rightFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        rightBackDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+    }
+
+    public void floatWheels() {
+        leftFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        leftBackDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        rightFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        rightBackDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+    }
 }

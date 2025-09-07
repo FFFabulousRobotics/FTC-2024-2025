@@ -3,24 +3,27 @@ package org.firstinspires.ftc.teamcode.previousCode.test;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.Servo;
 
-@Disabled
+
 @TeleOp(group = "Test")
 public class ServoTest2 extends LinearOpMode {
     @Override
     public void runOpMode(){
-        Servo armStretchServo = hardwareMap.get(Servo.class, "armStretch");
-        Servo armTurnServo = hardwareMap.get(Servo.class, "armTurn");
-        Servo armSpinXServo = hardwareMap.get(Servo.class, "armSpinX");
-        Servo armSpinYServo = hardwareMap.get(Servo.class, "armSpinY");
+        Servo test = hardwareMap.get(Servo.class, "test");
+        Servo armLeftTurnServo = hardwareMap.get(Servo.class, "armTurnL");
+        Servo armRightTurnServo = hardwareMap.get(Servo.class, "armTurnR");
+        Servo armLeftSpinServo = hardwareMap.get(Servo.class, "armSpinL");
+        Servo armRightSpinServo = hardwareMap.get(Servo.class, "armSpinR");
         Servo armGrabServo = hardwareMap.get(Servo.class, "armGrab");
         Servo liftServo = hardwareMap.get(Servo.class, "liftServo");
+        Servo topServo = hardwareMap.get(Servo.class, "liftTop");
         Servo containerServo = hardwareMap.get(Servo.class, "containerServo");
-        Servo liftTopServo = hardwareMap.get(Servo.class, "liftTop");
-        Servo[] servos = {armStretchServo, armTurnServo, armSpinXServo, armSpinYServo, armGrabServo, liftServo, containerServo, liftTopServo};
-        String[] names = {"stretch", "turn", "spinX", "spinY", "grab","lift","container","top"};
+        Servo[] servos = {test,armLeftTurnServo, armRightTurnServo, armLeftSpinServo, armRightSpinServo, armGrabServo, liftServo,topServo, containerServo};
+        String[] names = {"test","turnL", "turnR", "spinL", "spinR", "grab","lift","top","container"};
+
         //stretch(1): [0, 0.3]
         //turn(3): [0.38-back, 0.71-out]
         //grab(5): [0-open, 0.53-close]
